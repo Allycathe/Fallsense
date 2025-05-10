@@ -1,4 +1,5 @@
 import { Router } from "express"; 
+import sql from "../db.js";
 import { authMiddleware } from "../middleware/authmiddleware";
 
 const cookie_name='token';
