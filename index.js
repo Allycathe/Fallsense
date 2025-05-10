@@ -1,6 +1,6 @@
 import express from 'express';
 import {engine} from 'express-handlebars';
-import Handlebars from 'handlebars';
+import handlebars from 'express-handlebars';
 import cookieParser from 'cookie-parser';
 
 /*Configuración express */
@@ -13,13 +13,16 @@ app.use(cookieParser());
 /*Configuración handlebars */
 app.engine(
     'handlebars',
-     Handlebars.engine({
-        runtimeoptions: {
-            allowProtoPropertiesByDefault: true,
-            allowProtoMethodsByDefault: true,
-        }
-     })
-);
+    handlebars.engine({
+      runtimeOptions: {
+        allowProtoPropertiesByDefault: true,
+        allowProtoMethodsByDefault: true,
+      },
+    })
+  );
+app.set('view engine', 'handlebars');
+app.set('views', './views');
+
 
 app.get('/',async (req, res) => {
     res.render('Inicio')});
