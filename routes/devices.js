@@ -1,6 +1,6 @@
 import { Router } from "express"; 
-import {authMiddleware} from "../middleware/auth.js";
-import sql from "../db.js";
+import {authMiddleware} from "../middleware/authmiddleware.js";
+import sql from "../db/db.js";
 
 
 export const devicesRouter = Router();

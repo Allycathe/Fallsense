@@ -1,6 +1,6 @@
 import { Router } from "express"; 
-import sql from "../db.js";
-import { authMiddleware } from "../middleware/authmiddleware";
+import sql from "../db/db.js";
+import { authMiddleware } from "../middleware/authmiddleware.js";
 
 const cookie_name='token';
 
@@ -9,7 +9,7 @@ authRouter.get('/login', (req, res) => {
     res.render('login');
 });
 
-authRouter.post('/login', async (req, res) => {
+authRouter.post('/login', authMiddleware, async (req, res) => {
     const {email, password} = req.body;
     const query ='SELECT id, password from usuarios WHERE email =$1';
     const result =await sql(query, [email]);  
