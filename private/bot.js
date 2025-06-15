@@ -35,29 +35,23 @@ const userData = new WizardScene(
     },
     async (ctx)=>{
         ctx.wizard.state.correo=ctx.message.text;
-
         const {nombre, apellido, correo}=ctx.wizard.state;
-        console.log('datos', nombre, apellido, correo)
         try{
             const consulta='SELECT id, name, lastname, mail FROM usuario WHERE name % $1 AND lastname % $2 AND mail ILIKE $3 ORDER BY SIMILARITY(name, $1) DESC, SIMILARITY(lastname, $2) DESC LIMIT 1;';
-                const respuesta = await sql.query(consulta, [nombre, apellido, correo])
-            
+            const respuesta = await sql.query(consulta, [nombre, apellido, correo])
             if(respuesta.length==0){
                 ctx.reply('El usuario no esta registrado/n favor visitar la pagina web');
                 ctx.scene.leave();
             }
             else{
                 const id=respuesta[0].id;
-                console.log('id',id)
                 const id_chat=ctx.chat.id;
-                console.log('id_chat', id_chat);
                 const insercion='UPDATE usuario SET id_chat=$1 where id=$2'
                 await sql.query(insercion,[id_chat,id])
                 ctx.reply('✅ ¡Usuario vinculado correctamente! Ahora recibirás notificaciones en este chat.');
                 ctx.scene.leave();
             }
             }catch(error){
-                console.log(error)
                 ctx.reply('Hubo un error con el servicio, intente más tarde')
             }
     },
@@ -68,7 +62,6 @@ bot.use(session());
 bot.use(stage.middleware());
 
 bot.command('registrar', (ctx)=>{
-    console.log('registrar')
     ctx.scene.enter('userData');
 });
 

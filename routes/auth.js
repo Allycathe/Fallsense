@@ -1,18 +1,20 @@
 import { Router } from "express"; 
+import bcrypt from 'bcryptjs';
 import sql from "../db/db.js";
-import { authMiddleware } from "../middleware/authmiddleware.js";
+import jwt from 'jsonwebtoken';
 
-const cookie_name='token';
+const clave='ME ECHE TICS I'
+const Cookie_name='token';
 
 export const authRouter = Router();
 authRouter.get('/login', (req, res) => {
     res.render('login');
 });
 
-authRouter.post('/login', authMiddleware, async (req, res) => {
+authRouter.post('/login', async (req, res) => {
     const {email, password} = req.body;
-    const query ='SELECT id, password from usuarios WHERE email =$1';
-    const result =await sql(query, [email]);  
+    console.log(email, password)
+    const result =await sql.query('SELECT id, password from usuario WHERE mail =$1', [email]);  
     if(result.length === 0){
         res.redirect(302, '/login?error=unauthorized');
     }
@@ -30,7 +32,7 @@ authRouter.post('/login', authMiddleware, async (req, res) => {
         res.redirect(302, '/');
         return;
     }
-    res.redirect('/Login?error=unauthorized');
+    res.redirect('/auth/login?error=unauthorized');
     return;
 });
 
@@ -39,9 +41,14 @@ authRouter.get('/register', (req, res) => {
 });
 authRouter.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
+    const [nombre, apellido] = name.trim().split(' ');
     const hash = bcrypt.hashSync(password, 10);
-
-    const query = 'INSERT INTO usuarios (nombre, correo, password) VALUES ($1, $2, $3)';
-    await sql(query, [name, email, hash]);
-    res.redirect(302, '/login');
+    try{
+        await sql.query('INSERT INTO usuario (name, lastname, mail, password) VALUES ($1, $2, $3, $4)',[nombre, apellido, email, hash])
+    res.redirect(302, '/auth/login');
+    }
+    catch(error){
+        res.redirect(302, '/auth/register?error=usuario-existe');
+    }
+    
 }); 
