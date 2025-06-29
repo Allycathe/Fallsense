@@ -1,15 +1,15 @@
 import jwt from 'jsonwebtoken';
 
-const clave='ME ECHE TICS'
+const clave='ME_ECHE_TICS_I'
 export const authMiddleware = (req, res, next) => {
     try {
         const decoded = jwt.verify(req.cookies.token, clave)
         if (decoded) {
             req.user = decoded;
-            res.status(200).json({ message: 'Token is valid' });
             return next();
         }
     } catch (error) {
-        return res.status(401).json({ error: 'Unauthorized' });
+            console.log('Error en authMiddleware:', error.message);
+        return res.redirect('/auth/login');
     }
 };

@@ -20,25 +20,19 @@ bot.command('hola', (ctx) => {
 const userData = new WizardScene(
     'userData',
     (ctx)=>{
-        ctx.reply('Porfavor ingresa tu nombre');
+        ctx.reply('Porfavor ingresa tu correo');
         ctx.wizard.next();
     },
     (ctx)=>{
-        ctx.wizard.state.nombre=ctx.message.text;
-        ctx.reply('Ingresa tu apellido');
-        ctx.wizard.next();
-    },
-    (ctx)=>{
-        ctx.wizard.state.apellido=ctx.message.text;
-        ctx.reply('Ingresa tu correo');
+        ctx.wizard.state.correo=ctx.message.text;
+        ctx.reply('Ingresa otp');
         ctx.wizard.next();
     },
     async (ctx)=>{
-        ctx.wizard.state.correo=ctx.message.text;
-        const {nombre, apellido, correo}=ctx.wizard.state;
+        ctx.wizard.state.otp=ctx.message.text;
+        const {correo, otp}=ctx.wizard.state;
         try{
-            const consulta='SELECT id, name, lastname, mail FROM usuario WHERE name % $1 AND lastname % $2 AND mail ILIKE $3 ORDER BY SIMILARITY(name, $1) DESC, SIMILARITY(lastname, $2) DESC LIMIT 1;';
-            const respuesta = await sql.query(consulta, [nombre, apellido, correo])
+            const respuesta= await sql`SELECT id, name, email FROM usuario WHERE email = ${correo} and otp=${otp}`;
             if(respuesta.length==0){
                 ctx.reply('El usuario no esta registrado/n favor visitar la pagina web');
                 ctx.scene.leave();
@@ -46,13 +40,12 @@ const userData = new WizardScene(
             else{
                 const id=respuesta[0].id;
                 const id_chat=ctx.chat.id;
-                const insercion='UPDATE usuario SET id_chat=$1 where id=$2'
-                await sql.query(insercion,[id_chat,id])
+                await sql`INSERT INTO usuario_telegram (id_usuario, id_chat) VALUES (${id}, ${id_chat}) ON CONFLICT (id_usuario) DO UPDATE SET id_chat = EXCLUDED.id_chat`;
                 ctx.reply('✅ ¡Usuario vinculado correctamente! Ahora recibirás notificaciones en este chat.');
                 ctx.scene.leave();
             }
-            }catch(error){
-                ctx.reply('Hubo un error con el servicio, intente más tarde')
+            } catch (error) {
+              console.error('❌ Error durante el registro:', error); 
             }
     },
 );
@@ -64,6 +57,24 @@ bot.use(stage.middleware());
 bot.command('registrar', (ctx)=>{
     ctx.scene.enter('userData');
 });
+bot.command('desvincular', async (ctx) => {
+  const id_chat = ctx.chat.id;
+  try {
+    const usuario = await sql`SELECT u.id, u.name FROM usuario_telegram ut JOIN usuario u ON u.id = ut.id_usuario WHERE ut.id_chat = ${id_chat}`;
+    if (usuario.length === 0) {
+      await ctx.reply('⚠️ No hay ningún usuario vinculado a este chat.');
+      return;
+    }
+
+    const user = usuario[0];
+    await sql`UPDATE usuario_telegram SET id_chat = NULL WHERE id_usuario = ${user.id}`;
+    await ctx.reply(`✅ Usuario ${user.name} desvinculado exitosamente.`);
+  } catch (error) {
+    console.error('❌ Error en /desvincular:', error);
+    await ctx.reply('❌ Hubo un error al desvincular. Intenta más tarde.');
+  }
+});
+
 
 bot.launch();
 export default bot;

@@ -1,22 +1,27 @@
-{{#if error}}
-<h1>Estimado usuario, el correo que ingrso o la contraseña están incorrectas</h1>
-{{/if}}
-<div class="form-container  pt-5   center">
-    <div class="bg-success-subtle rounded-5 p-5">
-        <h3>Login de Arrien2.cl</h3>
-        <form action="/auth/login" method="POST">
-            <div class="mb-2 mt-2">
-                <label for="email" class="form-label">Ingrese su correo</label>
-                <input type="email" class="form-control" name="email" placeholder="nombre@correo.com" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Ingrese su contraseña</label>
-                <input type="password" class="form-control" name="password"  placeholder="Contraseña1234" required>
-            </div>
-            <button type="submit" class="btn btn-success w-100">Login</button>
-            <div class="text-center mt-2">
-                <a href="register" class="btn btn-link">Regístrese aquí</a>
-            </div>
-        </form>
+
+
+  {{#if error}}
+    <h1>Estimado usuario, el correo que ingresó o la contraseña están incorrectas</h1>
+  {{/if}}
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="form-container pt-5 center">
+    <div class="bg-danger-subtle rounded-5 p-5">
+      <h3>Login de Fallsense</h3>
+      <form action="/auth/login" method="POST">
+        <div class="mb-2 mt-2">
+          <label for="email" class="form-label">Ingrese su correo</label>
+          <input type="email" class="form-control" name="email" placeholder="nombre@correo.com" required>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Ingrese su contraseña</label>
+          <input type="password" class="form-control" name="password" placeholder="Contraseña1234" required>
+        </div>
+        <button type="submit" class="btn btn-danger w-100">Login</button>
+        <div class="text-center mt-2">
+          <a href="/auth/register" class="btn btn-secondary">Regístrese aquí</a>
+        </div>
+      </form>
     </div>
-</div>
+  </div>
+  </div>
+

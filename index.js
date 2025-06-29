@@ -16,11 +16,9 @@ app.use(cookieParser());
 
 /*Configuración de rutas */
 import {authRouter} from './routes/auth.js';
-import {devicesRouter} from './routes/devices.js';
-import {fallsRouter} from './routes/falls.js';
 import {homeRouter} from './routes/home.js';
 import {notifyRouter} from './routes/notify.js';
-import {profileRouter} from './routes/profile.js';
+import { deviceRouter } from './routes/device.js';
 
 /*Configuración handlebars */
 app.engine(
@@ -37,14 +35,11 @@ app.set('views', './views');
 
 
 app.get('/',async (req, res) => {
-  console.log('hola')
-    res.render('home')});
+    res.render('index')});
 
+app.use(homeRouter);
 app.use('/auth', authRouter);
-app.use('/devices', devicesRouter);
-app.use('/falls', fallsRouter);
-app.use('/home', homeRouter);
 app.use('/notify', notifyRouter);
-app.use('/profile', profileRouter);
+app.use('/device', deviceRouter);
 
 app.listen(3000, () => console.log('Me quiero matar'));

@@ -1,0 +1,188 @@
+<div class="container py-5">
+  <div class="row g-4">
+
+    <!-- Cuadro Perfil -->
+<div class="col-md-4">
+  <div class="card rounded-4 shadow-sm p-4 h-100">
+    <h4 class="mb-3 text-primary">Perfil de Usuario</h4>
+    <p><strong>Nombre:</strong> {{user.nombre}} {{user.apellido}}</p>
+    <p><strong>Correo:</strong> {{user.correo}}</p>
+
+    <p>
+      <strong>OTP:</strong>
+      <span id="otpDisplay">******</span>
+      <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="toggleOtpBtn">Mostrar</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="copyOtpBtn">Copiar</button>
+      <button type="button" class="btn btn-sm btn-outline-success ms-2" id="regenerateOtpBtn">Regenerar OTP</button>
+    </p>
+
+    <!-- Botones cerrar sesión y editar -->
+    <div class="mt-3">
+<a href="/auth/logout/" class="btn btn-danger me-2" role="button" id="logoutBtn">Cerrar sesión</a>      
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUserModal">
+        Editar datos
+      </button>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Cuadro Dispositivos -->
+    <div class="col-md-4">
+      <div class="card rounded-4 shadow-sm p-4 h-100 d-flex flex-column">
+        <h4 class="mb-3 text-success">Dispositivos</h4>
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Asignado a</th>
+              <th>Batería</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each dispositivos}}
+            <tr>
+              <td>{{this.id}}</td>
+              <td>{{this.usuario}}</td>
+              <td>{{this.bateria}}%</td>
+            </tr>
+            {{/each}}
+            {{#unless dispositivos}}
+            <tr>
+              <td colspan="3" class="text-center fst-italic">No hay dispositivos asignados</td>
+            </tr>
+            {{/unless}}
+          </tbody>
+        </table>
+        <div class="mt-auto text-center">
+          <a href="/devices" class="btn btn-outline-success">Ver dispositivos completos</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuadro Caídas -->
+    <div class="col-md-4">
+      <div class="card rounded-4 shadow-sm p-4 h-100">
+        <h4 class="mb-3 text-danger">Caídas Recientes</h4>
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Fecha y Hora</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each caidas}}
+            <tr>
+              <td>{{this.usuario}}</td>
+              <td>{{this.timestamp}}</td>
+            </tr>
+            {{/each}}
+            {{#unless caidas}}
+            <tr><td colspan="2" class="text-center fst-italic">No hay caídas recientes</td></tr>
+            {{/unless}}
+          </tbody>
+        </table>
+        <a href="/falls" class="btn btn-outline-danger mt-3 w-100">Ver todas las caídas</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal para editar usuario -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 p-4">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editUserModalLabel">Editar datos de usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <form action="/profile/edit" method="POST" class="needs-validation" novalidate>
+        <div class="modal-body">
+          <!-- Contraseña actual -->
+          <div class="mb-3">
+            <label for="contrasena_actual" class="form-label">Contraseña actual</label>
+            <input type="password" class="form-control" id="contrasena_actual" name="contrasena_actual" required>
+            <div class="invalid-feedback">Debes ingresar tu contraseña actual.</div>
+          </div>
+
+          <!-- Nombre -->
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" value="{{user.nombre}}" required>
+            <div class="invalid-feedback">Por favor ingresa un nombre válido.</div>
+          </div>
+
+          <!-- Apellido -->
+          <div class="mb-3">
+            <label for="apellido" class="form-label">Apellido</label>
+            <input type="text" class="form-control" id="apellido" name="apellido" value="{{user.apellido}}" required>
+            <div class="invalid-feedback">Por favor ingresa un apellido válido.</div>
+          </div>
+
+          <!-- Correo -->
+          <div class="mb-3">
+            <label for="correo" class="form-label">Correo</label>
+            <input type="email" class="form-control" id="correo" name="correo" value="{{user.correo}}" required>
+            <div class="invalid-feedback">Por favor ingresa un correo válido.</div>
+          </div>
+
+          <!-- Nueva contraseña -->
+          <div class="mb-3">
+            <label for="nueva_contrasena" class="form-label">Nueva contraseña (opcional)</label>
+            <input type="password" class="form-control" id="nueva_contrasena" name="nueva_contrasena">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const otpDisplay = document.getElementById('otpDisplay');
+    const toggleOtpBtn = document.getElementById('toggleOtpBtn');
+    const copyOtpBtn = document.getElementById('copyOtpBtn');
+    const otpCode = '{{user.otp}}';  // Pasa el OTP desde backend
+
+    toggleOtpBtn.addEventListener('click', () => {
+      if (otpDisplay.textContent === '******') {
+        otpDisplay.textContent = otpCode;
+        toggleOtpBtn.textContent = 'Ocultar';
+      } else {
+        otpDisplay.textContent = '******';
+        toggleOtpBtn.textContent = 'Mostrar';
+      }
+    });
+
+    copyOtpBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(otpCode)
+        .then(() => alert('Código OTP copiado al portapapeles'))
+        .catch(() => alert('Error al copiar el código OTP'));
+    });
+
+    // Bootstrap validation example for the modal form
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+      form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  });
+</script>
+
+
+<script src="/js/script.js"></script>
