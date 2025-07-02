@@ -19,6 +19,7 @@
     "express-handlebars": "^8.0.3",
     "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.6.1",
     "nodemailer": "^7.0.3",
     "telegraf": "^4.16.3"
   }

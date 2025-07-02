@@ -7,7 +7,7 @@ export const notifyRouter = Router();
 notifyRouter.post('/:id_usuario/:id_esp', async (req, res) => {
   try {
     const { id_usuario, id_esp } = req.params;
-    const datos = req.body;
+    const {datos} = req.body;
     console.log(datos);
     await sql`INSERT INTO fall(id_usuario, id_esp, fecha) VALUES(${id_usuario}, ${id_esp}, NOW())`;
     const chats = await sql`SELECT ut.id_chat FROM usuario_esp ue JOIN usuario_telegram ut ON ut.id_usuario = ue.id_usuario WHERE ue.id_esp = ${id_esp}`;
@@ -17,7 +17,7 @@ notifyRouter.post('/:id_usuario/:id_esp', async (req, res) => {
     for (const chat of chats) {
       await bot.telegram.sendMessage(
         chat.id_chat, 
-        `⚠️ Se ha registrado una caída, se cayo: ${nombreDispositivo}`
+        `⚠️ Se ha registrado una caída, se cayo: ${nombreDispositivo}\n❤️ Latidos: ${datos}`
       );
 
     res.status(201).send('Caída registrada y notificada correctamente');

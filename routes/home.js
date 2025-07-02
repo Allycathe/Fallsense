@@ -3,6 +3,7 @@ import {authMiddleware} from "../middleware/authmiddleware.js";
 import sql from "../db/db.js";
 import bcrypt from 'bcryptjs';
 import { generarOTP } from "../otp.js";
+import { DateTime } from 'luxon';
 
 export const homeRouter = Router();
 
@@ -13,15 +14,23 @@ homeRouter.get('/home', authMiddleware, async (req, res) => {
     const user = userQuery[0] || {};
     
     const dispositivos = await sql`SELECT d.id, d.usuario, d.bateria FROM device d JOIN usuario_esp ue ON ue.id_esp = d.id WHERE ue.id_usuario = ${id};`;
+    const caidasRaw = await sql`SELECT d.usuario AS usuario, f.fecha AS timestamp FROM fall f JOIN usuario u ON f.id_usuario = u.id JOIN device d ON d.id= f.id_esp WHERE f.id_usuario = ${id} ORDER BY f.fecha DESC LIMIT 5;`;
+    // formatear las fechas:
+    const caidas = caidasRaw.map(item => ({
+      usuario: item.usuario,
+      timestamp: DateTime.fromJSDate(item.timestamp, { zone: 'utc' }) // PostgreSQL entrega UTC
+      .setZone('America/Santiago') // convertir a hora de Chile
+      .toFormat('HH:mm dd/MM/yyyy') // formato personalizado
+  })); 
 
-    const caidas = await sql`SELECT u.name || ' ' || u.lastname AS usuario, f.fecha AS timestamp FROM fall f JOIN usuario u ON f.id_usuario = u.id WHERE f.id_usuario = ${id} ORDER BY f.fecha DESC LIMIT 5;`;
     res.render('home', {user, dispositivos, caidas});})
 
 homeRouter.get('/devices', authMiddleware, async (req, res) => {
     try{
         const id= req.user.id;
         const devices = await sql`SELECT d.id, d.usuario, d.bateria FROM device d JOIN usuario_esp ue ON ue.id_esp = d.id WHERE ue.id_usuario = ${id};`;
-        res.render('devices', {devices});
+        console.log(devices);
+        res.render('devices', {dispositivos:devices});
     }
     catch(e){
         console.error(error);
@@ -29,10 +38,27 @@ homeRouter.get('/devices', authMiddleware, async (req, res) => {
     }
 });
 
-homeRouter.get('/falls', authMiddleware,async (req, res) => {
-    const id= req.user.id;
-    const falls = await sql`SELECT * FROM fall WHERE id_usuario = ${id}`;
-    res.render('falls', {falls});
+homeRouter.get('/falls', authMiddleware, async (req, res) => {
+  const id = req.user.id;
+  
+  const fallsRaw = await sql`
+    SELECT f.*, d.usuario AS dispositivo_usuario
+    FROM fall f
+    JOIN device d ON f.id_esp = d.id
+    WHERE f.id_usuario = ${id}
+  `;
+
+  // Formatear las fechas:
+  const falls = fallsRaw.map(item => ({
+    ...item,
+    fecha: item.fecha
+      ? DateTime.fromJSDate(item.fecha, { zone: 'utc' })
+          .setZone('America/Santiago')
+          .toFormat('HH:mm dd/MM/yyyy')
+      : 'Sin fecha',
+  }));
+
+  res.render('falls', { caidas: falls });
 });
 
 homeRouter.post('/profile/edit', authMiddleware, async (req, res) => {
@@ -66,4 +92,12 @@ homeRouter.post('/otp/reset', authMiddleware, async (req, res) => {
 
   res.json({ success: true, otp: nuevoOtp });
 });
+
+homeRouter.post('/devices/:id/edit', async (req, res) => {
+  const { id } = req.params;
+  const { usuario } = req.body;
+  await sql`UPDATE device SET usuario = ${usuario} WHERE id = ${id}`;
+  res.redirect('/devices');
+});
+
 
